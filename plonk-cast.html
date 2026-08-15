@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plonk Cast - Plonktropica</title>
+<style>
+  :root{
+    --bg-1:#0d1321; --bg-2:#161d33; --panel:#1c2541; --ink:#eef2ff; --muted:#8d96b8;
+    --plonk:#8fe3a3; --plonk-2:#5fd1c9; --plonk-3:#f4c95d; --danger:#ff6b6b; --accent:#c792ea;
+    --font-display:"Trebuchet MS","Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; min-height:100vh; background:radial-gradient(circle at 20% 10%, var(--bg-2), transparent 60%), radial-gradient(circle at 80% 80%, var(--bg-2), transparent 55%), var(--bg-1); color:var(--ink); font-family:var(--font-display);}
+  a{color:inherit; text-decoration:none;}
+  header{display:flex; align-items:center; justify-content:space-between; padding:14px 24px; border-bottom:1px solid rgba(143,227,163,0.15);}
+  .logo{display:flex; align-items:center; gap:10px; font-weight:bold; font-size:1.15rem;}
+  .logo .blob{width:22px; height:22px; border-radius:50%; background:radial-gradient(circle at 35% 30%, var(--plonk), var(--plonk-2));}
+  .crumb{color:var(--muted); font-size:0.85rem; padding: 10px 24px 0;}
+  .crumb a{color:var(--plonk-2);}
+  .titlebar{display:flex; align-items:center; justify-content:space-between; padding: 8px 24px 4px; flex-wrap:wrap; gap:10px;}
+  .titlebar h1{margin:0; font-size:1.5rem;}
+  .titlebar .tools{display:flex; gap:8px; align-items:center;}
+  .starBtn, .fsBtn{background:var(--panel); border:1px solid var(--plonk-2); color:var(--ink); border-radius:999px; padding:7px 14px; cursor:pointer; font-size:0.9rem;}
+  .starBtn.active{ color:var(--plonk-3); border-color:var(--plonk-3); }
+  main{max-width:1100px; margin:10px auto 40px; padding:0 24px; display:grid; grid-template-columns:1fr 260px; gap:24px;}
+  #gameCol{ display:flex; flex-direction:column; align-items:center; }
+  p.subtitle{max-width:640px; text-align:center; color:var(--muted); margin:0 0 14px; font-size:0.9rem; line-height:1.5;}
+  .hud{display:flex; flex-wrap:wrap; gap:8px 18px; justify-content:center; background:var(--panel); padding:8px 18px; border-radius:12px; margin-bottom:12px;}
+  .hud div{font-size:0.9rem; color:var(--muted);}
+  .hud b{color:var(--plonk);}
+  #gameWrap{position:relative; border-radius:14px; overflow:hidden; box-shadow:0 10px 34px rgba(0,0,0,0.4); border:2px solid var(--plonk-2); background:linear-gradient(180deg,#8fd0e8 0%,#8fd0e8 32%,#1a5b7a 32%,#0c3550 100%);}
+  canvas{display:block; touch-action:none;}
+  #overlay{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(5,7,15,0.72); text-align:center; gap:8px; padding:16px;}
+  #overlay h2{margin:0; font-size:1.4rem; color:var(--plonk-3);}
+  #overlay p{margin:0; color:#cfd6f5; max-width:320px; font-size:0.9rem;}
+  .btn{background:linear-gradient(135deg,var(--plonk),var(--plonk-2)); border:none; color:#0d1321; font-weight:bold; padding:9px 20px; border-radius:999px; cursor:pointer;}
+  #controls{display:flex; justify-content:center; align-items:center; width:100%; max-width:420px; margin-top:14px; gap:12px;}
+  .actionCol{display:flex; gap:7px;}
+  .actionCol button{background:var(--panel); border:1px solid var(--accent); color:var(--ink); border-radius:9px; padding:9px 14px; font-size:0.9rem; cursor:pointer;}
+  #catchBtn{background:linear-gradient(135deg,var(--danger),var(--plonk-3)); color:#241407; font-weight:bold; border:none; padding:12px 26px; font-size:1rem;}
+  aside{background:var(--panel); border-radius:14px; padding:16px; height:fit-content; border:1px solid rgba(199,146,234,0.15);}
+  aside h2{font-size:0.9rem; color:var(--accent); margin:0 0 10px; text-transform:uppercase; letter-spacing:1px;}
+  aside ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px;}
+  aside li a{display:flex; align-items:center; gap:8px; padding:7px 8px; border-radius:8px; font-size:0.85rem;}
+  aside li a:hover{background:rgba(255,255,255,0.04);}
+  footer{text-align:center; color:var(--muted); font-size:0.8rem; padding:16px;}
+  footer a{color:var(--plonk-2);}
+  @media (max-width:760px){ main{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="../index.html"><span class="blob"></span> Plonktropica</a>
+</header>
+<div class="crumb"><a href="../index.html">Plonktropica</a> › Plonk Cast</div>
+
+<div class="titlebar">
+  <h1>🎣 Plonk Cast</h1>
+  <div class="tools">
+    <button class="starBtn" id="starBtn">☆ Favorite</button>
+    <button class="fsBtn" id="fsBtn">⛶ Fullscreen</button>
+  </div>
+</div>
+
+<main>
+  <div id="gameCol">
+    <p class="subtitle">Press Space (or tap Cast) to drop your line, then press it again the instant a fish bites. Catch as many as you can in 45 seconds.</p>
+    <div class="hud">
+      <div>Fish: <b id="fishVal">0</b></div>
+      <div>Time: <b id="timeVal">45</b>s</div>
+      <div>Best: <b id="highVal">0</b></div>
+    </div>
+    <div id="gameWrap">
+      <canvas id="game" width="440" height="480"></canvas>
+      <div id="overlay">
+        <h2 id="overlayTitle">Plonk Cast</h2>
+        <p id="overlayText">Cast your line and reel in as many plonkfish as you can. Ready?</p>
+        <button class="btn" id="startBtn">Play</button>
+      </div>
+    </div>
+    <div id="controls">
+      <div class="actionCol">
+        <button id="catchBtn">Cast / Catch (Space)</button>
+        <button id="restartBtn">Play Again</button>
+      </div>
+    </div>
+  </div>
+
+  <aside>
+    <h2>Recommended games</h2>
+    <ul id="recList"></ul>
+  </aside>
+</main>
+
+<footer>← <a href="../index.html">Back to Plonktropica</a></footer>
+
+<script>
+  const GAMES = [
+    { title: "Plonk Invaders", icon: "🛸", url: "plonk-invaders.html" },
+    { title: "Plonk Runner", icon: "🏃", url: "plonk-runner.html" },
+    { title: "Plonk Range", icon: "🎯", url: "plonk-range.html" },
+  ];
+  const recList = document.getElementById('recList');
+  GAMES.forEach(g=>{
+    const li = document.createElement('li');
+    li.innerHTML = `<a href="${g.url}"><span>${g.icon}</span> ${g.title}</a>`;
+    recList.appendChild(li);
+  });
+
+  const starBtn = document.getElementById('starBtn');
+  const favKey = 'plonktropicaFav_cast';
+  if(localStorage.getItem(favKey) === '1'){ starBtn.textContent = '★ Favorited'; starBtn.classList.add('active'); }
+  starBtn.addEventListener('click', ()=>{
+    const active = starBtn.classList.toggle('active');
+    starBtn.textContent = active ? '★ Favorited' : '☆ Favorite';
+    localStorage.setItem(favKey, active ? '1':'0');
+  });
+  document.getElementById('fsBtn').addEventListener('click', ()=>{
+    const el = document.getElementById('gameWrap');
+    if(el.requestFullscreen) el.requestFullscreen();
+  });
+
+  (function(){
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const WATER_TOP = H*0.32;
+
+    const fishEl = document.getElementById('fishVal');
+    const timeEl = document.getElementById('timeVal');
+    const highEl = document.getElementById('highVal');
+    const overlay = document.getElementById('overlay');
+    const overlayTitle = document.getElementById('overlayTitle');
+    const overlayText = document.getElementById('overlayText');
+    const startBtn = document.getElementById('startBtn');
+    const catchBtn = document.getElementById('catchBtn');
+    const restartBtn = document.getElementById('restartBtn');
+
+    let HIGH = parseInt(localStorage.getItem('plonkCastHigh') || '0', 10);
+    highEl.textContent = HIGH;
+
+    let running = false, gameOver = false;
+    let timeLeft = 45;
+    let caught = 0;
+    let lineDown = false;
+    let lineX = W/2, lineY = WATER_TOP;
+    let biteActive = false, biteTimer = 0, biteWindow = 0;
+    let castCooldown = 0;
+    let bobY = 0;
+    let lastTime = 0;
+    let timerAcc = 0;
+    const fishSprites = ['images/1.png','images/2.png','images/3.png','images/4.png','images/5.png','images/6.png'].map(src=>{
+      const img = new Image(); img.src = src; return img;
+    });
+    const playerSprite = new Image();
+    playerSprite.src = 'images/7.png';
+
+    const DOCK_X = W/2, DOCK_Y = WATER_TOP - 14;
+    const FISH_COUNT = 5;
+    let swimFish = [];
+    let hookedFish = null;
+    let bucketFish = []; // sprite indices of fish delivered to the bucket
+
+    function randSpriteIdx(){ return Math.floor(Math.random()*fishSprites.length); }
+    function spawnFreeFish(){
+      return {
+        state: 'free',
+        x: Math.random()*W,
+        y: WATER_TOP + 40 + Math.random()*(H-WATER_TOP-80),
+        dir: Math.random() < 0.5 ? -1 : 1,
+        speed: 0.35 + Math.random()*0.5,
+        wob: Math.random()*Math.PI*2,
+        spriteIdx: randSpriteIdx(),
+        orbitAngle: Math.random()*Math.PI*2,
+        orbitRadius: 24 + Math.random()*16,
+        orbitSpeed: 0.0022 + Math.random()*0.0018,
+        biteWiggle: Math.random()*Math.PI*2
+      };
+    }
+    function initFish(){
+      swimFish = [];
+      for(let i=0;i<FISH_COUNT;i++) swimFish.push(spawnFreeFish());
+      hookedFish = null;
+    }
+    function releaseLineFish(){
+      swimFish.forEach(f=>{
+        if(f.state === 'orbit' || f.state === 'biting'){
+          f.state = 'free';
+          f.dir = Math.random() < 0.5 ? -1 : 1;
+          f.speed = 0.35 + Math.random()*0.5;
+        }
+      });
+    }
+    function assignOrbitFish(){
+      // pull the 2 nearest free fish into orbit around the fresh bobber
+      const free = swimFish.filter(f=>f.state==='free')
+        .sort((a,b)=> Math.hypot(a.x-lineX,a.y-lineY) - Math.hypot(b.x-lineX,b.y-lineY));
+      free.slice(0,2).forEach(f=>{
+        f.state = 'orbit';
+        f.orbitAngle = Math.random()*Math.PI*2;
+      });
+    }
+    function promoteBiter(){
+      let biter = swimFish.find(f=>f.state==='orbit');
+      if(!biter){
+        biter = swimFish.find(f=>f.state==='free');
+      }
+      if(biter) biter.state = 'biting';
+    }
+
+    function resetGame(){
+      timeLeft = 45; caught = 0; lineDown = false; biteActive = false; castCooldown = 0;
+      timerAcc = 0;
+      bucketFish = [];
+      initFish();
+      updateHud();
+    }
+    function updateHud(){
+      fishEl.textContent = caught;
+      timeEl.textContent = Math.ceil(timeLeft);
+      if(caught > HIGH){ HIGH = caught; highEl.textContent = HIGH; }
+    }
+    function showOverlay(title, text, label){
+      overlayTitle.textContent = title; overlayText.textContent = text; startBtn.textContent = label || 'Play';
+      overlay.style.display = 'flex';
+    }
+    function hideOverlay(){ overlay.style.display = 'none'; }
+
+    function action(){
+      if(!running || gameOver) return;
+      if(!lineDown){
+        if(castCooldown > 0) return;
+        lineDown = true;
+        lineY = WATER_TOP;
+        biteActive = false;
+        biteTimer = 800 + Math.random()*1400;
+      } else {
+        if(biteActive){
+          caught++;
+          updateHud();
+          const biter = swimFish.find(f=>f.state==='biting');
+          if(biter){
+            swimFish = swimFish.filter(f=>f !== biter);
+            hookedFish = { spriteIdx: biter.spriteIdx, fromX: lineX, fromY: lineY, animT: 0 };
+          }
+          lineDown = false;
+          biteActive = false;
+          castCooldown = 400;
+          releaseLineFish();
+        } else {
+          // reeled in too early, nothing happens, just resets
+          lineDown = false;
+          castCooldown = 500;
+          releaseLineFish();
+        }
+      }
+    }
+
+    function update(dt){
+      if(!running || gameOver) return;
+      timerAcc += dt;
+      if(timerAcc >= 1000){
+        timerAcc -= 1000;
+        timeLeft -= 1;
+        if(timeLeft <= 0){ endGame(); return; }
+        updateHud();
+      }
+      if(castCooldown > 0) castCooldown -= dt;
+
+      const wasLineDown = lineDown;
+      if(lineDown){
+        if(lineY < H - 40) lineY += 4;
+        if(!biteActive){
+          biteTimer -= dt;
+          if(biteTimer <= 0){
+            biteActive = true;
+            biteWindow = 650;
+            promoteBiter();
+          }
+        } else {
+          biteWindow -= dt;
+          if(biteWindow <= 0){
+            // missed the bite
+            biteActive = false;
+            lineDown = false;
+            castCooldown = 400;
+            releaseLineFish();
+          }
+        }
+      }
+      // fish that just reached the bobber's neighborhood get pulled into orbit
+      if(lineDown && lineY >= H - 45){
+        const anyTied = swimFish.some(f=>f.state==='orbit' || f.state==='biting');
+        if(!anyTied) assignOrbitFish();
+      }
+
+      swimFish.forEach(f=>{
+        if(f.state === 'free'){
+          f.x += f.dir * f.speed * (dt/16);
+          f.y += Math.sin(performance.now()/500 + f.wob) * 0.15;
+          if(f.x < -25){ f.x = -25; f.dir = 1; }
+          if(f.x > W+25){ f.x = W+25; f.dir = -1; }
+        } else if(f.state === 'orbit'){
+          f.orbitAngle += f.orbitSpeed * dt;
+          f.x = lineX + Math.cos(f.orbitAngle) * f.orbitRadius;
+          f.y = lineY + Math.sin(f.orbitAngle) * f.orbitRadius * 0.45;
+        } else if(f.state === 'biting'){
+          f.biteWiggle += dt/90;
+          f.x = lineX + Math.sin(f.biteWiggle)*3;
+          f.y = lineY + Math.cos(f.biteWiggle*1.3)*2;
+        }
+      });
+
+      if(hookedFish){
+        hookedFish.animT += dt;
+        const p = Math.min(1, hookedFish.animT / 550);
+        hookedFish.x = hookedFish.fromX + (DOCK_X - hookedFish.fromX) * p;
+        hookedFish.y = hookedFish.fromY + (DOCK_Y - hookedFish.fromY) * p;
+        hookedFish.scale = 1 - p*0.5;
+        if(p >= 1){
+          bucketFish.push(hookedFish.spriteIdx);
+          swimFish.push(spawnFreeFish());
+          hookedFish = null;
+        }
+      }
+
+      bobY = Math.sin(performance.now()/300) * 3;
+    }
+
+    function drawFishSprite(f, size){
+      const sprite = fishSprites[f.spriteIdx];
+      if(sprite.complete && sprite.naturalWidth){
+        ctx.drawImage(sprite, f.x - size/2, f.y - size/2, size, size);
+      } else {
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.beginPath();
+        ctx.ellipse(f.x, f.y, size*0.45, size*0.2, 0, 0, Math.PI*2);
+        ctx.fill();
+      }
+    }
+
+    function draw(t){
+      ctx.clearRect(0,0,W,H);
+      // sky
+      ctx.fillStyle = '#8fd0e8';
+      ctx.fillRect(0,0,W,WATER_TOP);
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.ellipse(70,50,26,14,0,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(330,70,30,16,0,0,Math.PI*2); ctx.fill();
+      // water
+      const grad = ctx.createLinearGradient(0,WATER_TOP,0,H);
+      grad.addColorStop(0,'#1a5b7a'); grad.addColorStop(1,'#0c3550');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0,WATER_TOP,W,H-WATER_TOP);
+
+      // background free-swimming fish (drawn under the dock/line)
+      swimFish.forEach(f=>{
+        if(f.state === 'free'){
+          ctx.save();
+          ctx.globalAlpha = 0.5;
+          drawFishSprite(f, 28);
+          ctx.restore();
+        }
+      });
+
+      // dock
+      ctx.fillStyle = '#5a3d26';
+      ctx.fillRect(W/2 - 60, WATER_TOP - 14, 120, 16);
+
+      // angler
+      const anglerSize = 46;
+      if(playerSprite.complete && playerSprite.naturalWidth){
+        ctx.drawImage(playerSprite, DOCK_X - anglerSize/2, WATER_TOP - 14 - anglerSize + 8, anglerSize, anglerSize);
+      }
+
+      // fishing line
+      if(lineDown){
+        ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(W/2, WATER_TOP - 6);
+        ctx.lineTo(lineX, lineY);
+        ctx.stroke();
+
+        // fish orbiting/biting near the bobber, drawn above the line
+        swimFish.forEach(f=>{
+          if(f.state === 'orbit' || f.state === 'biting'){
+            ctx.save();
+            ctx.globalAlpha = f.state === 'biting' ? 1 : 0.85;
+            drawFishSprite(f, f.state === 'biting' ? 30 : 24);
+            ctx.restore();
+          }
+        });
+
+        const bobColor = biteActive ? '#ff6b6b' : '#f4c95d';
+        ctx.fillStyle = bobColor;
+        ctx.beginPath();
+        ctx.arc(lineX, lineY + (biteActive ? bobY*2 : bobY), biteActive ? 9 : 7, 0, Math.PI*2);
+        ctx.fill();
+
+        if(biteActive){
+          ctx.fillStyle = '#fff';
+          ctx.font = 'bold 16px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('!', lineX, lineY - 22);
+        }
+      } else {
+        ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(W/2, WATER_TOP - 6);
+        ctx.lineTo(W/2, WATER_TOP - 26);
+        ctx.stroke();
+      }
+
+      // fish being reeled in after a catch
+      if(hookedFish){
+        ctx.save();
+        drawFishSprite(hookedFish, 30 * hookedFish.scale);
+        ctx.restore();
+      }
+
+      drawBucket();
+    }
+
+    function drawBucket(){
+      const bx = 40, by = 112; // sits in the sky/top-left corner as a HUD-ish prop
+      const bw = 46, bh = 36;
+      ctx.save();
+      // bucket body (trapezoid)
+      ctx.fillStyle = '#4b5563';
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(bx - bw/2 + 5, by - bh);
+      ctx.lineTo(bx + bw/2 - 5, by - bh);
+      ctx.lineTo(bx + bw/2, by);
+      ctx.lineTo(bx - bw/2, by);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      // rim
+      ctx.beginPath();
+      ctx.ellipse(bx, by - bh, bw/2 - 5, 5, 0, 0, Math.PI*2);
+      ctx.fillStyle = '#64748b';
+      ctx.fill();
+      ctx.stroke();
+
+      // fill level rises with each catch, capped visually at 12 fish
+      const fillP = Math.min(1, bucketFish.length / 12);
+      const fillH = fillP * (bh - 8);
+      if(fillH > 0){
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(bx - bw/2 + 4, by - fillH - 3, bw - 8, fillH);
+        ctx.clip();
+        ctx.fillStyle = 'rgba(143,227,163,0.5)';
+        ctx.fillRect(bx - bw/2, by - bh, bw, bh);
+        ctx.restore();
+      }
+
+      // small thumbnails of the most recently caught fish, stacked inside
+      const shown = bucketFish.slice(-6);
+      const cols = 3;
+      shown.forEach((idx,i)=>{
+        const col = i % cols, row = Math.floor(i/cols);
+        const fx = bx - bw/2 + 11 + col*13;
+        const fy = by - 8 - row*11;
+        const sprite = fishSprites[idx];
+        if(sprite.complete && sprite.naturalWidth){
+          ctx.drawImage(sprite, fx-6, fy-6, 12, 12);
+        }
+      });
+
+      ctx.fillStyle = '#eef2ff';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(bucketFish.length + ' fish', bx, by + 16);
+      ctx.restore();
+    }
+
+    function loop(time){
+      const dt = time - lastTime; lastTime = time;
+      update(dt); draw(time);
+      requestAnimationFrame(loop);
+    }
+
+    function endGame(){
+      gameOver = true; running = false;
+      localStorage.setItem('plonkCastHigh', Math.max(HIGH, caught));
+      showOverlay('Time\'s Up', `You caught ${caught} plonkfish. Nice work, angler.`, 'Play Again');
+    }
+    function doStart(){ resetGame(); running = true; gameOver = false; hideOverlay(); }
+
+    startBtn.addEventListener('click', doStart);
+    restartBtn.addEventListener('click', doStart);
+    catchBtn.addEventListener('click', action);
+    window.addEventListener('keydown', e=>{
+      if(e.key === ' '){ e.preventDefault(); action(); }
+      if(e.key === 'Enter') doStart();
+    });
+
+    initFish();
+    draw(0);
+    requestAnimationFrame(loop);
+  })();
+</script>
+</body>
+</html>
