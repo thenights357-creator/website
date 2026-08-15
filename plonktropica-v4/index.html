@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plonktropica</title>
+<style>
+  :root{
+    --bg-1:#0d1321;
+    --bg-2:#161d33;
+    --panel:#1c2541;
+    --ink:#eef2ff;
+    --muted:#8d96b8;
+    --plonk:#8fe3a3;
+    --plonk-2:#5fd1c9;
+    --plonk-3:#f4c95d;
+    --danger:#ff6b6b;
+    --accent:#c792ea;
+    --font-display: "Trebuchet MS", "Segoe UI", sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 20% 10%, var(--bg-2), transparent 60%),
+      radial-gradient(circle at 80% 80%, var(--bg-2), transparent 55%),
+      var(--bg-1);
+    color:var(--ink);
+    font-family: var(--font-display);
+  }
+  a{color:inherit; text-decoration:none;}
+
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:16px 28px;
+    border-bottom:1px solid rgba(143,227,163,0.15);
+    position:sticky;
+    top:0;
+    background:rgba(13,19,33,0.85);
+    backdrop-filter: blur(6px);
+    z-index:10;
+  }
+  .logo{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:1.4rem;
+    font-weight:bold;
+    letter-spacing:0.5px;
+  }
+  .logo .blob{
+    width:30px; height:30px;
+    border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--plonk), var(--plonk-2));
+    box-shadow:0 0 14px rgba(143,227,163,0.5);
+  }
+  nav a{
+    color:var(--muted);
+    margin-left:20px;
+    font-size:0.95rem;
+  }
+  nav a:hover{color:var(--plonk);}
+
+  .hero{
+    max-width:900px;
+    margin:0 auto;
+    padding:48px 24px 20px;
+    text-align:center;
+  }
+  .hero h1{
+    font-size:2.4rem;
+    margin:0 0 10px;
+    text-shadow:0 0 20px rgba(143,227,163,0.3);
+  }
+  .hero p{
+    color:var(--muted);
+    max-width:560px;
+    margin:0 auto;
+    line-height:1.6;
+  }
+
+  main{
+    max-width:1100px;
+    margin: 20px auto 60px;
+    padding: 0 24px;
+    display:grid;
+    grid-template-columns: 1fr 260px;
+    gap: 28px;
+  }
+  section.games h2{
+    font-size:1.2rem;
+    color:var(--plonk-3);
+    margin: 26px 0 14px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap:16px;
+  }
+  .card{
+    background:var(--panel);
+    border-radius:14px;
+    overflow:hidden;
+    border:1px solid rgba(143,227,163,0.12);
+    transition: transform 0.15s, box-shadow 0.15s;
+    display:flex;
+    flex-direction:column;
+  }
+  .card:hover{
+    transform: translateY(-4px);
+    box-shadow: 0 10px 26px rgba(0,0,0,0.35);
+    border-color: var(--plonk-2);
+  }
+  .thumb{
+    height:120px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:2.6rem;
+  }
+  .card-body{
+    padding:12px 14px 16px;
+  }
+  .card-body h3{
+    margin:0 0 4px;
+    font-size:1.02rem;
+  }
+  .card-body p{
+    margin:0;
+    font-size:0.82rem;
+    color:var(--muted);
+    line-height:1.4;
+  }
+  .tag{
+    display:inline-block;
+    margin-top:8px;
+    font-size:0.7rem;
+    padding:2px 8px;
+    border-radius:999px;
+    background:rgba(95,209,201,0.15);
+    color:var(--plonk-2);
+  }
+
+  aside{
+    background:var(--panel);
+    border-radius:14px;
+    padding:18px;
+    height:fit-content;
+    border:1px solid rgba(199,146,234,0.15);
+  }
+  aside h2{
+    font-size:1rem;
+    color:var(--accent);
+    margin:0 0 12px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+  }
+  aside ul{
+    list-style:none;
+    margin:0; padding:0;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  aside li a{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 10px;
+    border-radius:10px;
+    font-size:0.9rem;
+  }
+  aside li a:hover{ background:rgba(255,255,255,0.04); }
+  aside li span.icon{ font-size:1.3rem; }
+
+  footer{
+    text-align:center;
+    color:var(--muted);
+    font-size:0.85rem;
+    padding: 20px;
+    border-top:1px solid rgba(143,227,163,0.1);
+  }
+  footer a{ color:var(--plonk-2); }
+
+  @media (max-width: 760px){
+    main{ grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><span class="blob"></span> Plonktropica</div>
+  <nav>
+    <a href="#games">Games</a>
+    <a href="#recommended">Recommended</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <h1>🫧 Plonktropica</h1>
+  <p>A little arcade of original plonk-themed games. Pick one below, hit fullscreen, and go plonk something.</p>
+</div>
+
+<main>
+  <section class="games" id="games">
+    <h2>All games</h2>
+    <div class="grid" id="gameGrid"></div>
+  </section>
+
+  <aside id="recommended">
+    <h2>Recommended games</h2>
+    <ul id="recList"></ul>
+  </aside>
+</main>
+
+<footer>Plonktropica · a fan-made arcade of original games</footer>
+
+<script>
+  const GAMES = [
+    { title: "Plonk Invaders", desc: "Blast the descending swarm before they reach you.", icon: "🛸", tag: "Arcade", url: "games/plonk-invaders.html" },
+    { title: "Plonk Runner", desc: "Dodge obstacles across three lanes as the pace ramps up.", icon: "🏃", tag: "Runner", url: "games/plonk-runner.html" },
+    { title: "Plonk Range", desc: "Line up the sight and fire before targets duck back down.", icon: "🎯", tag: "Shooting", url: "games/plonk-range.html" },
+    { title: "Plonk Cast", desc: "Cast your line and reel in fish before time runs out.", icon: "🎣", tag: "Fishing", url: "games/plonk-cast.html" },
+  ];
+
+  const grid = document.getElementById('gameGrid');
+  const recList = document.getElementById('recList');
+
+  GAMES.forEach(g=>{
+    const card = document.createElement('a');
+    card.className = 'card';
+    card.href = g.url;
+    card.innerHTML = `
+      <div class="thumb">${g.icon}</div>
+      <div class="card-body">
+        <h3>${g.title}</h3>
+        <p>${g.desc}</p>
+        <span class="tag">${g.tag}</span>
+      </div>`;
+    grid.appendChild(card);
+
+    const li = document.createElement('li');
+    li.innerHTML = `<a href="${g.url}"><span class="icon">${g.icon}</span> ${g.title}</a>`;
+    recList.appendChild(li);
+  });
+</script>
+
+</body>
+</html>
